@@ -7,7 +7,6 @@ def format_playlist(public_playlist: PublicPlaylist):
 
     formatted_playlist = {
         "name": info.get("name", "Untitled"),
-        "description": info.get("description", ""),
         "author": info.get("ownerV2", {}).get("data", {}).get("name", "Unknown"),
         "songCount": info.get("content", {}).get("totalCount", 0)
     }
@@ -27,3 +26,7 @@ def format_playlist(public_playlist: PublicPlaylist):
 
     formatted_playlist["songs"] = playlist_songs
     return formatted_playlist
+
+def get_playlist_from_url(spotify_url: str):
+    public_playlist = PublicPlaylist(spotify_url)
+    return format_playlist(public_playlist)
