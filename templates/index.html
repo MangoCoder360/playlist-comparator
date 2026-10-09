@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Playlist Comparator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="page-shell">
+        <nav class="topbar" aria-label="Main navigation">
+            <a class="wordmark" href="/">
+                <span class="wordmark-mark" aria-hidden="true">/</span>
+                <span>playlist comparator</span>
+            </a>
+        </nav>
+
+        <section class="hero" aria-labelledby="page-title">
+            <h1 id="page-title">playlist<br><em>comparator</em></h1>
+            <p class="intro">Drop in two playlist links and see which tracks they have in common.</p>
+
+            <form class="playlist-form" id="playlist-form" action="/results" method="get" novalidate>
+                <div class="input-stack">
+                    <label class="playlist-input" for="playlist-one">
+                        <span class="input-number">01</span>
+                        <span class="input-content">
+                            <span class="input-label">First playlist</span>
+                            <input id="playlist-one" name="playlist_one" type="url" placeholder="Paste a Spotify or Apple Music link" autocomplete="url" required>
+                        </span>
+                        <span class="input-status" aria-live="polite"></span>
+                    </label>
+                    <label class="playlist-input" for="playlist-two">
+                        <span class="input-number">02</span>
+                        <span class="input-content">
+                            <span class="input-label">Second playlist</span>
+                            <input id="playlist-two" name="playlist_two" type="url" placeholder="Paste a Spotify or Apple Music link" autocomplete="url" required>
+                        </span>
+                        <span class="input-status" aria-live="polite"></span>
+                    </label>
+                </div>
+
+                <p class="form-message" id="form-message" role="alert"></p>
+                <button class="submit-button" type="submit">
+                    <span>Compare playlists</span>
+                    <span class="button-arrow" aria-hidden="true">&#8594;</span>
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <section class="loading-screen" id="loading-screen" aria-live="polite" aria-hidden="true">
+        <div class="loading-inner">
+            <div class="loading-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+            <p class="eyebrow"><span></span> Working on it</p>
+            <h2>Finding your<br><em>shared sound.</em></h2>
+            <p class="loading-status" id="loading-status">Checking playlist links</p>
+        </div>
+    </section>
+</body>
+<style>
+    :root {
+        --paper: #fffaf7;
+        --ink: #252023;
+        --muted: #817478;
+        --line: #eadfdc;
+        --pink: #f5a8b9;
+        --pink-deep: #dc6f8b;
+        --pink-soft: #fff0f2;
+        --green: #70a68d;
+        --serif: "Fraunces", Georgia, serif;
+        --sans: "DM Sans", sans-serif;
+        --mono: "DM Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+    }
+
+    body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-image: linear-gradient(rgba(220, 111, 139, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 111, 139, 0.045) 1px, transparent 1px);
+        background-size: 34px 34px;
+        content: "";
+        mask-image: linear-gradient(to bottom, black, transparent 75%);
+    }
+
+    .page-shell {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+        padding: 28px clamp(22px, 5vw, 76px) 24px;
+    }
+
+    .topbar, .footer-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .wordmark {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--ink);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+    }
+
+    .wordmark-mark {
+        display: grid;
+        width: 25px;
+        height: 25px;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--pink);
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1;
+        transform: rotate(18deg);
+    }
+
+    .topbar-note, .footer-note, .supported-services {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .hero {
+        width: min(100%, 720px);
+        margin: auto;
+        padding: 76px 0 62px;
+    }
+
+    .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 0 0 18px;
+        color: var(--pink-deep);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+    }
+
+    .eyebrow span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 4px rgba(112, 166, 141, 0.14);
+    }
+
+    h1, h2 {
+        margin: 0;
+        font-family: var(--serif);
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+
+    h1 {
+        max-width: 650px;
+        font-size: clamp(45px, 7vw, 78px);
+        line-height: 0.99;
+    }
+
+    h1 em, h2 em {
+        color: var(--pink-deep);
+        font-weight: 600;
+    }
+
+    .intro {
+        max-width: 390px;
+        margin: 23px 0 40px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+    }
+
+    .playlist-form { width: 100%; }
+
+    .input-stack {
+        display: grid;
+        gap: 11px;
+    }
+
+    .playlist-input {
+        display: flex;
+        min-height: 86px;
+        align-items: center;
+        gap: 18px;
+        padding: 13px 20px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.56);
+        cursor: text;
+        transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .playlist-input:focus-within {
+        border-color: var(--pink-deep);
+        background: #fff;
+        box-shadow: 0 7px 22px rgba(220, 111, 139, 0.1);
+    }
+
+    .playlist-input.is-valid { border-color: var(--green); }
+    .playlist-input.is-invalid { border-color: var(--pink-deep); }
+
+    .input-number {
+        align-self: flex-start;
+        padding-top: 4px;
+        color: var(--pink-deep);
+        font-family: var(--mono);
+        font-size: 11px;
+    }
+
+    .input-content { min-width: 0; flex: 1; }
+
+    .input-label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    input {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--ink);
+        font: 15px var(--sans);
+    }
+
+    input::placeholder { color: #b8aaad; }
+
+    .input-status {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        flex: 0 0 28px;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--pink-soft);
+        color: var(--pink-deep);
+        font-size: 15px;
+        opacity: 0;
+        transition: opacity 160ms ease;
+    }
+
+    .is-valid .input-status, .is-invalid .input-status { opacity: 1; }
+    .is-valid .input-status { background: #e9f5ee; color: #438367; }
+    .is-invalid .input-status { background: var(--pink-soft); color: var(--pink-deep); }
+
+    .form-message {
+        min-height: 18px;
+        margin: 13px 0 8px;
+        color: var(--pink-deep);
+        font-size: 12px;
+    }
+
+    .submit-button {
+        display: flex;
+        width: 100%;
+        min-height: 56px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 19px 0 22px;
+        border: 0;
+        border-radius: 4px;
+        background: var(--ink);
+        color: white;
+        cursor: pointer;
+        font: 600 14px var(--sans);
+        transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .submit-button:hover:not(:disabled) { background: var(--pink-deep); transform: translateY(-2px); }
+    .submit-button:disabled { cursor: not-allowed; opacity: 0.48; }
+
+    .button-arrow { font-size: 22px; font-weight: 400; }
+
+    .supported-services {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 25px;
+    }
+
+    .service-pill { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+    .service-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .spotify-dot { background: #63b584; }
+    .apple-dot { background: #e47b99; }
+
+    .footer-note { margin-top: auto; }
+    .footer-line { width: 50px; height: 1px; background: var(--line); }
+
+    .loading-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        background: var(--pink-soft);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 300ms ease, transform 300ms ease;
+    }
+
+    .loading-screen.is-visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+    .loading-inner { width: min(100% - 44px, 720px); }
+    .loading-inner h2 { font-size: clamp(46px, 7vw, 76px); line-height: 0.98; }
+    .loading-status { margin: 26px 0 0; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+
+    .loading-mark { display: flex; gap: 5px; margin-bottom: 42px; }
+    .loading-mark span { width: 8px; height: 28px; border-radius: 4px; background: var(--pink-deep); animation: pulse 900ms ease-in-out infinite; }
+    .loading-mark span:nth-child(2) { animation-delay: 150ms; }
+    .loading-mark span:nth-child(3) { animation-delay: 300ms; }
+
+    @keyframes pulse { 0%, 100% { height: 14px; opacity: 0.45; } 50% { height: 34px; opacity: 1; } }
+
+    @media (max-width: 580px) {
+        .page-shell { padding-top: 22px; }
+        .topbar-note { display: none; }
+        .hero { padding: 74px 0 50px; }
+        .intro { margin-bottom: 31px; }
+        .playlist-input { gap: 12px; padding-right: 13px; padding-left: 14px; }
+        .supported-services { flex-wrap: wrap; gap: 10px 14px; }
+        .supported-services > span:first-child { width: 100%; }
+        .footer-note { font-size: 9px; }
+    }
+</style>
+<script>
+    const form = document.querySelector("#playlist-form");
+    const fields = [...document.querySelectorAll(".playlist-input")];
+    const message = document.querySelector("#form-message");
+    const loadingScreen = document.querySelector("#loading-screen");
+    const loadingStatus = document.querySelector("#loading-status");
+
+    function detectService(value) {
+        try {
+            const url = new URL(value);
+            const host = url.hostname.toLowerCase().replace(/^www\./, "");
+            if (host === "open.spotify.com" && url.pathname.startsWith("/playlist/")) return "Spotify";
+            if (host === "music.apple.com" && url.pathname.includes("/playlist/")) return "Apple Music";
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    function updateField(field) {
+        const input = field.querySelector("input");
+        const status = field.querySelector(".input-status");
+        const service = detectService(input.value.trim());
+        field.classList.toggle("is-valid", Boolean(service));
+        field.classList.toggle("is-invalid", Boolean(input.value.trim()) && !service);
+        status.textContent = service ? "✓" : input.value.trim() ? "×" : "";
+        status.setAttribute("aria-label", service ? `${service} detected` : "");
+        return service;
+    }
+
+    fields.forEach((field) => field.querySelector("input").addEventListener("input", () => updateField(field)));
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const services = fields.map(updateField);
+        if (services.some((service) => !service)) {
+            message.textContent = "Enter two valid Spotify or Apple Music playlist links to continue.";
+            return;
+        }
+
+        message.textContent = "";
+        loadingScreen.classList.add("is-visible");
+        loadingScreen.setAttribute("aria-hidden", "false");
+        const steps = ["Checking playlist links", "Fetching playlist tracks", "Comparing songs", "Preparing results", "Adding the final touches", "Almost there..."];
+        let step = 0;
+        const interval = setInterval(() => {
+            step += 1;
+            if (step < steps.length) loadingStatus.textContent = steps[step];
+        }, 1000);
+
+        setTimeout(() => {
+            form.submit();
+        }, 4000);
+    });
+</script>
+</html>9

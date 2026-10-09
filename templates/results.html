@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="robots" content="noindex, nofollow">
+	<title>Playlist Comparator | Results</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+</head>
+<body>
+	<main class="page-shell">
+		<nav class="topbar" aria-label="Main navigation">
+			<a class="wordmark" href="/">
+				<span class="wordmark-mark" aria-hidden="true">/</span>
+				<span>playlist comparator</span>
+			</a>
+			<a class="back-link" href="/">New comparison <span aria-hidden="true">&#8599;</span></a>
+		</nav>
+
+		{% if error %}
+		<section class="error-state" aria-labelledby="error-title">
+			<p class="eyebrow"><span></span> Something went wrong</p>
+			<h1 id="error-title">We couldn't<br><em>compare those.</em></h1>
+			<p class="intro">{{ error }}</p>
+			<a class="button-link" href="/">Try different links <span aria-hidden="true">&#8594;</span></a>
+		</section>
+		{% else %}
+		<section class="results-header" aria-labelledby="results-title">
+			<p class="eyebrow"><span></span> Your shared sound</p>
+			<h1 id="results-title">The songs<br><em>you share.</em></h1>
+			<div class="playlist-summary">
+				<div>
+					<span class="summary-label">Playlist one</span>
+					<strong>{{ comparison.original_first.name }}</strong>
+					<span>{{ comparison.original_first.author }}</span>
+				</div>
+				<span class="summary-divider" aria-hidden="true">+</span>
+				<div>
+					<span class="summary-label">Playlist two</span>
+					<strong>{{ comparison.original_second.name }}</strong>
+					<span>{{ comparison.original_second.author }}</span>
+				</div>
+			</div>
+		</section>
+
+		<section class="shared-songs" aria-labelledby="shared-title">
+			<div class="section-heading">
+				<h2 id="shared-title">Shared tracks</h2>
+				<span class="count">{{ comparison.shared|length }} track{% if comparison.shared|length != 1 %}s{% endif %}</span>
+			</div>
+
+			{% if comparison.shared %}
+			<ol class="song-list">
+				{% for first_song, second_song in comparison.shared %}
+				<li class="song-row">
+					<span class="song-number">{{ "%02d"|format(loop.index) }}</span>
+					<div class="song-info">
+						<strong>{{ first_song.name }}</strong>
+						<span>{{ first_song.artist }}</span>
+					</div>
+					<span class="song-album">{{ first_song.album }}</span>
+				</li>
+				{% endfor %}
+			</ol>
+			{% else %}
+			<div class="empty-state">
+				<p>No shared tracks found.</p>
+				<span>Try comparing playlists with a little more overlap.</span>
+			</div>
+			{% endif %}
+		</section>
+
+		<footer class="footer-note">
+			<span>{{ comparison.shared|length }} shared tracks</span>
+			<a href="/">Start over <span aria-hidden="true">&#8594;</span></a>
+		</footer>
+		{% endif %}
+	</main>
+</body>
+<style>
+	:root {
+		--paper: #fffaf7;
+		--ink: #252023;
+		--muted: #817478;
+		--line: #eadfdc;
+		--pink: #f5a8b9;
+		--pink-deep: #dc6f8b;
+		--pink-soft: #fff0f2;
+		--green: #70a68d;
+		--serif: "Fraunces", Georgia, serif;
+		--sans: "DM Sans", sans-serif;
+		--mono: "DM Mono", monospace;
+	}
+
+	* { box-sizing: border-box; }
+	html, body { min-height: 100%; }
+	body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+	body::before { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(220, 111, 139, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 111, 139, 0.045) 1px, transparent 1px); background-size: 34px 34px; content: ""; mask-image: linear-gradient(to bottom, black, transparent 75%); }
+	.page-shell { display: flex; min-height: 100vh; flex-direction: column; padding: 28px clamp(22px, 5vw, 76px) 24px; }
+	.topbar, .footer-note { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+	.wordmark { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); font-size: 15px; font-weight: 700; text-decoration: none; }
+	.wordmark-mark { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; background: var(--pink); color: var(--ink); font-family: var(--serif); font-size: 22px; line-height: 1; transform: rotate(18deg); }
+	.back-link, .footer-note a { color: var(--pink-deep); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-decoration: none; text-transform: uppercase; }
+	.results-header, .error-state, .shared-songs { width: min(100%, 720px); margin-right: auto; margin-left: auto; }
+	.results-header { padding: 78px 0 43px; }
+	.error-state { padding: 18vh 0; }
+	.eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 18px; color: var(--pink-deep); font-family: var(--mono); font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase; }
+	.eyebrow span { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(112, 166, 141, 0.14); }
+	h1, h2 { margin: 0; font-family: var(--serif); font-weight: 600; letter-spacing: 0; }
+	h1 { font-size: clamp(45px, 7vw, 78px); line-height: 0.99; }
+	h1 em { color: var(--pink-deep); font-weight: 600; }
+	.intro { max-width: 390px; margin: 23px 0 30px; color: var(--muted); font-size: 16px; line-height: 1.55; }
+	.playlist-summary { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: center; margin-top: 42px; padding-top: 19px; border-top: 1px solid var(--line); }
+	.playlist-summary div { display: grid; gap: 4px; min-width: 0; }
+	.playlist-summary strong, .playlist-summary div span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.playlist-summary strong { font-size: 14px; }
+	.playlist-summary div span:last-child { color: var(--muted); font-size: 12px; }
+	.summary-label, .count, .song-number { color: var(--pink-deep); font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+	.summary-divider { color: var(--pink); font-family: var(--serif); font-size: 27px; }
+	.section-heading { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 13px; border-bottom: 1px solid var(--ink); }
+	h2 { font-size: 23px; }
+	.song-list { margin: 0; padding: 0; list-style: none; }
+	.song-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) minmax(100px, 0.7fr); gap: 12px; align-items: center; min-height: 70px; border-bottom: 1px solid var(--line); }
+	.song-number { color: var(--muted); }
+	.song-info { display: grid; gap: 4px; min-width: 0; }
+	.song-info strong, .song-info span, .song-album { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.song-info strong { font-size: 14px; }
+	.song-info span, .song-album { color: var(--muted); font-size: 12px; }
+	.song-album { text-align: right; }
+	.empty-state { padding: 44px 0; border-bottom: 1px solid var(--line); }
+	.empty-state p { margin: 0 0 7px; font-size: 16px; font-weight: 600; }
+	.empty-state span { color: var(--muted); font-size: 13px; }
+	.button-link { display: inline-flex; align-items: center; justify-content: space-between; width: 220px; padding: 17px 18px; background: var(--ink); color: white; font-size: 13px; text-decoration: none; }
+	.button-link span { font-size: 20px; }
+	.footer-note { width: min(100%, 720px); margin: auto auto 0; padding-top: 52px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+	@media (max-width: 580px) { .page-shell { padding-top: 22px; } .results-header { padding-top: 74px; } .song-row { grid-template-columns: 28px minmax(0, 1fr); } .song-album { display: none; } .playlist-summary { gap: 10px; } .footer-note { font-size: 9px; } }
+</style>
+</html>
