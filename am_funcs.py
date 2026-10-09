@@ -1,7 +1,14 @@
-import requests, dotenv, os
+import requests, os
+from models import *
+from am_get_token import get_dev_token
+#import dotenv
 
-dotenv.load_dotenv()
-APPLE_MUSIC_AUTH_TOKEN = os.getenv("APPLE_MUSIC_AUTH_TOKEN")
+#dotenv.load_dotenv()
+#APPLE_MUSIC_AUTH_TOKEN = os.getenv("APPLE_MUSIC_AUTH_TOKEN")
+try:
+    APPLE_MUSIC_AUTH_TOKEN = get_dev_token()
+except Exception as e:
+    raise Exception(f"Failed to retrieve Apple Music dev token: {e}")
 
 def format_playlist(playlist_id: str):
     auth_token = APPLE_MUSIC_AUTH_TOKEN
@@ -59,5 +66,27 @@ def format_playlist(playlist_id: str):
     return formatted_playlist
 
 def get_playlist_from_url(apple_music_url: str):
+    """
+    This is the primary function for getting a playlist from Apple Music. It takes the playlist URL and returns a Playlist object with the playlist's data.
+    """
     playlist_id = apple_music_url.split("/")[-1].split("?")[0]
-    return format_playlist(playlist_id)
+    formatted = format_playlist(playlist_id)
+    return convert_to_playlist_object(formatted)
+
+def convert_to_playlist_object(playlist_data: dict) -> Playlist:
+    songs = [
+        Song(
+            name=song["name"],
+            artist=song["artist"],
+            album=song["album"],
+            duration=song["duration"],
+            source=Source.APPLE_MUSIC,
+            source_id=song.get("appleMusicId", "")
+        )
+        for song in playlist_data.get("songs", [])
+    ]
+    return Playlist(
+        name=playlist_data.get("name", "Untitled"),
+        author=playlist_data.get("author", "Unknown"),
+        songs=songs
+    )
