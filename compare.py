@@ -57,4 +57,6 @@ def compare_playlists(
 		shared=shared,
 		only_in_first=only_in_first,
 		only_in_second=only_in_second,
+		original_first=first,
+		original_second=second
 	)

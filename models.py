@@ -25,3 +25,5 @@ class PlaylistComparison:
     shared: list[tuple[Song, Song]]
     only_in_first: list[Song]
     only_in_second: list[Song]
+    original_first: Playlist = None
+    original_second: Playlist = None
