@@ -31,7 +31,7 @@ def results():
 	except Exception:
 		return render_template(
 			"results.html",
-			error="We could not load one of those playlists. Check the links and try again.",
+			error="Unable to process one or both playlists. Check links and try again.",
 		), 502
 
 	return render_template("results.html", comparison=comparison)
@@ -46,4 +46,4 @@ def fetch_playlist(url: str):
 	raise ValueError("Unsupported playlist service")
 
 if __name__ == "__main__":
-	app.run(debug=True, host="0.0.0.0", port=8080)
+	app.run(host="0.0.0.0", port=8081)
