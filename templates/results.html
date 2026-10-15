@@ -30,7 +30,7 @@
 		{% if error %}
 		<section class="error-state" aria-labelledby="error-title">
 			<p class="eyebrow">Something went wrong</p>
-			<h1 id="error-title">We couldn't<br>compare those.</h1>
+			<h1 id="error-title">{{ heading }}</h1>
 			<p class="intro">{{ error }}</p>
 			<a class="button-link" href="/">Try different links <span aria-hidden="true">&#8594;</span></a>
 		</section>
@@ -147,6 +147,7 @@
 		--muted: #b7a6aa;
 		--line: #44363b;
 		--pink-soft: #3a252d;
+		--button-text: #3f3f3f;
 	}
 
 	* { box-sizing: border-box; }
