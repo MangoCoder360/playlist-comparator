@@ -8,6 +8,12 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+	<script>
+		(() => {
+			const theme = localStorage.getItem("playlist-comparator-theme");
+			if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+		})();
+	</script>
 </head>
 <body>
 	<main class="page-shell">
@@ -16,7 +22,9 @@
 				<span class="wordmark-mark" aria-hidden="true">/</span>
 				<span>playlist comparator</span>
 			</a>
-			<a class="back-link" href="/">New comparison <span aria-hidden="true">&#8599;</span></a>
+			<div class="topbar-actions">
+				<button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">Dark mode</button>
+			</div>
 		</nav>
 
 		{% if error %}
@@ -117,9 +125,28 @@
 		--pink-deep: #dc6f8b;
 		--pink-soft: #fff0f2;
 		--green: #70a68d;
+		--button-text: #fff;
 		--serif: "Fraunces", Georgia, serif;
 		--sans: "DM Sans", sans-serif;
 		--mono: "DM Mono", monospace;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root:not([data-theme="light"]) {
+			--paper: #201c1e;
+			--ink: #f8eeeb;
+			--muted: #b7a6aa;
+			--line: #44363b;
+			--pink-soft: #3a252d;
+		}
+	}
+
+	:root[data-theme="dark"] {
+		--paper: #201c1e;
+		--ink: #f8eeeb;
+		--muted: #b7a6aa;
+		--line: #44363b;
+		--pink-soft: #3a252d;
 	}
 
 	* { box-sizing: border-box; }
@@ -128,8 +155,11 @@
 	body::before { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(220, 111, 139, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 111, 139, 0.045) 1px, transparent 1px); background-size: 34px 34px; content: ""; mask-image: linear-gradient(to bottom, black, transparent 75%); }
 	.page-shell { display: flex; min-height: 100vh; flex-direction: column; padding: 28px clamp(22px, 5vw, 76px) 24px; }
 	.topbar, .footer-note { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+	.topbar-actions { display: flex; align-items: center; gap: 20px; }
 	.wordmark { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); font-size: 15px; font-weight: 700; text-decoration: none; }
 	.wordmark-mark { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; background: var(--pink); color: var(--ink); font-family: var(--serif); font-size: 22px; line-height: 1; transform: rotate(18deg); }
+	.theme-toggle { padding: 9px 0; border: 0; background: transparent; color: var(--pink-deep); cursor: pointer; font: 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+	.theme-toggle:hover { color: var(--ink); }
 	.back-link, .footer-note a { color: var(--pink-deep); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-decoration: none; text-transform: uppercase; }
 	.results-header, .error-state, .shared-songs { width: min(100%, 720px); margin-right: auto; margin-left: auto; }
 	.results-header { padding: 78px 0 43px; }
@@ -163,9 +193,32 @@
 	.empty-state { padding: 44px 0; border-bottom: 1px solid var(--line); }
 	.empty-state p { margin: 0 0 7px; font-size: 16px; font-weight: 600; }
 	.empty-state span { color: var(--muted); font-size: 13px; }
-	.button-link { display: inline-flex; align-items: center; justify-content: space-between; width: 220px; padding: 17px 18px; background: var(--ink); color: white; font-size: 13px; text-decoration: none; }
+	.button-link { display: inline-flex; align-items: center; justify-content: space-between; width: 220px; padding: 17px 18px; background: var(--ink); color: var(--button-text); font-size: 13px; text-decoration: none; }
 	.button-link span { font-size: 20px; }
 	.footer-note { width: min(100%, 720px); margin: auto auto 0; padding-top: 52px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
 	@media (max-width: 580px) { .page-shell { padding-top: 22px; } .results-header { padding-top: 74px; } .song-row { grid-template-columns: 28px minmax(0, 1fr); } .song-album { display: none; } .playlist-summary { gap: 10px; } .footer-note { font-size: 9px; } }
 </style>
+<script>
+	const themeToggle = document.querySelector("[data-theme-toggle]");
+	const themeStorageKey = "playlist-comparator-theme";
+
+	function getTheme() {
+		return document.documentElement.dataset.theme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+	}
+
+	function updateThemeToggle() {
+		const isDark = getTheme() === "dark";
+		themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+		themeToggle.setAttribute("aria-pressed", String(isDark));
+	}
+
+	themeToggle?.addEventListener("click", () => {
+		const nextTheme = getTheme() === "dark" ? "light" : "dark";
+		document.documentElement.dataset.theme = nextTheme;
+		localStorage.setItem(themeStorageKey, nextTheme);
+		updateThemeToggle();
+	});
+
+	updateThemeToggle();
+</script>
 </html>

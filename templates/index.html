@@ -8,6 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <script>
+        (() => {
+            const theme = localStorage.getItem("playlist-comparator-theme");
+            if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+        })();
+    </script>
 </head>
 <body>
     <main class="page-shell">
@@ -16,6 +22,7 @@
                 <span class="wordmark-mark" aria-hidden="true">/</span>
                 <span>playlist comparator</span>
             </a>
+            <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">Dark mode</button>
         </nav>
 
         <section class="hero" aria-labelledby="page-title">
@@ -70,9 +77,34 @@
         --pink-deep: #dc6f8b;
         --pink-soft: #fff0f2;
         --green: #70a68d;
+        --input-background: rgba(255, 255, 255, 0.56);
+        --input-focus-background: #fff;
+        --button-text: #fff;
         --serif: "Fraunces", Georgia, serif;
         --sans: "DM Sans", sans-serif;
         --mono: "DM Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --paper: #201c1e;
+            --ink: #f8eeeb;
+            --muted: #b7a6aa;
+            --line: #44363b;
+            --pink-soft: #3a252d;
+            --input-background: rgba(255, 255, 255, 0.045);
+            --input-focus-background: #2b2528;
+        }
+    }
+
+    :root[data-theme="dark"] {
+        --paper: #201c1e;
+        --ink: #f8eeeb;
+        --muted: #b7a6aa;
+        --line: #44363b;
+        --pink-soft: #3a252d;
+        --input-background: rgba(255, 255, 255, 0.045);
+        --input-focus-background: #2b2528;
     }
 
     * { box-sizing: border-box; }
@@ -107,6 +139,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 20px;
     }
 
     .wordmark {
@@ -133,6 +166,19 @@
         line-height: 1;
         transform: rotate(18deg);
     }
+
+    .theme-toggle {
+        padding: 9px 0;
+        border: 0;
+        background: transparent;
+        color: var(--pink-deep);
+        cursor: pointer;
+        font: 10px var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .theme-toggle:hover { color: var(--ink); }
 
     .topbar-note, .footer-note, .supported-services {
         color: var(--muted);
@@ -209,14 +255,14 @@
         padding: 13px 20px;
         border: 1px solid var(--line);
         border-radius: 5px;
-        background: rgba(255, 255, 255, 0.56);
+        background: var(--input-background);
         cursor: text;
         transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
     }
 
     .playlist-input:focus-within {
         border-color: var(--pink-deep);
-        background: #fff;
+        background: var(--input-focus-background);
         box-shadow: 0 7px 22px rgba(220, 111, 139, 0.1);
     }
 
@@ -289,7 +335,7 @@
         border: 0;
         border-radius: 4px;
         background: var(--ink);
-        color: white;
+        color: var(--button-text);
         cursor: pointer;
         font: 600 14px var(--sans);
         transition: background 160ms ease, transform 160ms ease;
@@ -353,6 +399,28 @@
     }
 </style>
 <script>
+    const themeToggle = document.querySelector("[data-theme-toggle]");
+    const themeStorageKey = "playlist-comparator-theme";
+
+    function getTheme() {
+        return document.documentElement.dataset.theme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+
+    function updateThemeToggle() {
+        const isDark = getTheme() === "dark";
+        themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+        themeToggle.setAttribute("aria-pressed", String(isDark));
+    }
+
+    themeToggle?.addEventListener("click", () => {
+        const nextTheme = getTheme() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem(themeStorageKey, nextTheme);
+        updateThemeToggle();
+    });
+
+    updateThemeToggle();
+
     const form = document.querySelector("#playlist-form");
     const fields = [...document.querySelectorAll(".playlist-input")];
     const message = document.querySelector("#form-message");
